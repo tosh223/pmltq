@@ -1,6 +1,24 @@
 import boto3
 
+from base import QueueInterface
+
 class Sqs():
+
+    def __init__(self):
+        # boto3 session
+        session = boto3.Session()
+        self.__client = session.client('sqs')
+        self.__queue_url_list = self.__client.list_queues()['QueueUrls']
+
+    @property
+    def client(self):
+        return self.__client
+
+    @property
+    def queue_url_list(self):
+        return self.__queue_url_list
+
+class SqsInterface(QueueInterface):
 
     ATTRIBUTE_NAMES = [
         'ApproximateNumberOfMessages',
@@ -12,30 +30,26 @@ class Sqs():
         'VisibilityTimeout'
     ]
 
-    def __init__(self):
-        # boto3 session
-        session = boto3.Session()
-        self._sqs = session.client('sqs')
-        self.queue_url_list = self.__list_queues()
+    def __init__(self, client, queue_url):
+        self._clinet = client
+        self._queue_url = queue_url
+        self._attributes = self.__get_queue_attributes()
 
-    def __list_queues(self):
-        response = self._sqs.list_queues()
-        return response['QueueUrls']
+    def __get_queue_attributes(self):
+        response= self._clinet.get_queue_attributes(
+            QueueUrl=self._queue_url,
+            AttributeNames=self.ATTRIBUTE_NAMES
+        )
+        return response['Attributes']
 
-    def receive_message(self, queue_url):
-        return self._sqs.receive_message(QueueUrl=queue_url)
+    def qsize(self):
+        return self._attributes['ApproximateNumberOfMessages']
 
-    def get_queue_attributes(self):
-        attribures = {}
-        for queue_url in self.queue_url_list:
-            response= self._sqs.get_queue_attributes(
-                 QueueUrl=queue_url,
-                 AttributeNames=self.ATTRIBUTE_NAMES
-            )
-            attribures[queue_url] = response['Attributes']
-        return attribures
+    def get(self, block=True, timeout=None):
+        return self._clinet.receive_message(QueueUrl=self._queue_url)
 
 if __name__ == "__main__":
     sqs = Sqs()
-    response = sqs.get_queue_attributes()
+    interface = SqsInterface(sqs.client, sqs.queue_url_list[0])
+    response = interface.qsize()
     print(response)

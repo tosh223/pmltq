@@ -9,7 +9,8 @@ client = monitoring_v3.MetricServiceClient()
 pubsub_query = query.Query(
     client,
     project,
-    'pubsub.googleapis.com/subscription/num_undelivered_messages',
+    # metric_type='pubsub.googleapis.com/subscription/num_undelivered_messages',
+    metric_type='pubsub.googleapis.com/subscription/oldest_unacked_message_age',
     end_time=datetime.now(),
     minutes=2   # if set 1 minute, we get nothing while creating the latest metrics.
 )
