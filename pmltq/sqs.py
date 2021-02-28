@@ -52,4 +52,4 @@ if __name__ == "__main__":
     sqs = Sqs()
     interface = SqsInterface(sqs.client, sqs.queue_url_list[0])
     response = interface.qsize()
-    print(response)
+    print(f'{sqs.queue_url_list[0]}: {response}')
