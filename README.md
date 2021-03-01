@@ -1,1 +1,3 @@
-# pmltq
+# pystq
+
+Spanning Tree Queue for Python
