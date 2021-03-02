@@ -1,4 +1,4 @@
-class QueueInterface():
+class BaseInterface():
     def __init__(self):
         pass
 
