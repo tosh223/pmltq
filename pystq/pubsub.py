@@ -2,7 +2,8 @@ import os
 from datetime import datetime
 from concurrent.futures import TimeoutError
 
-from google.cloud import pubsub_v1
+from google.cloud.pubsub_v1.publisher.client import publisher_client
+from google.cloud.pubsub_v1.subscriber.client import subscriber_client
 from google.cloud.monitoring_v3 import query, MetricServiceClient
 
 from pystq.base import BaseInterface
@@ -14,18 +15,25 @@ class PubSubInterface(BaseInterface):
     METRIC_TYPE = 'pubsub.googleapis.com/subscription/num_undelivered_messages'
 
     def __init__(self):
-        # super().__init__()
+        super().__init__()
         self._monitor = MetricServiceClient()
-        self._publisher = pubsub_v1.PublisherClient()
-        self._subscriber = pubsub_v1.SubscriberClient()
-        project_path = self._publisher.project_path(self.PROJECT)
-        self._queue_list = self._publisher.list_topics(project_path)
+        self._publisher = publisher_client.PublisherClient()
+        # self._subscriber = subscriber_client.SubscriberClient()
+        project_path = self._publisher.common_project_path(self.PROJECT)
+
+        # topics
+        self._queue_list = [queue.name for queue in self._publisher.list_topics(project=project_path)]
+
+        # subscriptions
 
     @property
     def queue_list(self):
         return self._queue_list
 
-    def qsize(self):
+    def qsize(self, queue_list :list=None):
+        if not queue_list:
+            queue_list = self._queue_list
+
         pubsub_query = query.Query(
             self._monitor,
             self.PROJECT,
@@ -33,10 +41,13 @@ class PubSubInterface(BaseInterface):
             end_time=datetime.now(),
             minutes=2   # if set 1 minute, we get nothing while creating the latest metrics.
         )
-        # .select_resources(subscription_id=sub_name)
+        # .select_resources(subscription_id=queue_url)
+
+        # queue_dict = dict(zip([str(queue).split('/')[-1] for queue in queue_list], queue_list))
 
         for content in pubsub_query:
             subscription_id = content.resource.labels['subscription_id']
+            # queue_url = queue_dict[subscription_id]
             count = content.points[0].value.int64_value
             print(f'{subscription_id}: {count}')
 
