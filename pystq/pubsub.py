@@ -14,42 +14,46 @@ class PubSubInterface(BaseInterface):
     TIMEOUT = 5.0
     METRIC_TYPE = 'pubsub.googleapis.com/subscription/num_undelivered_messages'
 
+    @profile
     def __init__(self):
         super().__init__()
-        self._monitor = MetricServiceClient()
         self._publisher = publisher_client.PublisherClient()
-        # self._subscriber = subscriber_client.SubscriberClient()
+        self._subscriber = subscriber_client.SubscriberClient()
         project_path = self._publisher.common_project_path(self.PROJECT)
 
         # topics
-        self._queue_list = [queue.name for queue in self._publisher.list_topics(project=project_path)]
+        self._topic_list = [queue.name for queue in self._publisher.list_topics(project=project_path)]
 
         # subscriptions
+        self._subscription_list = [queue.name for queue in self._subscriber.list_subscriptions(project=project_path)]
 
     @property
-    def queue_list(self):
-        return self._queue_list
+    def topic_list(self):
+        return self._topic_list
+
+    @property
+    def subscription_list(self):
+        return self._subscription_list
 
     def qsize(self, queue_list :list=None):
         if not queue_list:
-            queue_list = self._queue_list
+            queue_list = self._subscription_list
 
         pubsub_query = query.Query(
-            self._monitor,
+            MetricServiceClient(),
             self.PROJECT,
             metric_type=self.METRIC_TYPE,
             end_time=datetime.now(),
             minutes=2   # if set 1 minute, we get nothing while creating the latest metrics.
         )
-        # .select_resources(subscription_id=queue_url)
 
-        # queue_dict = dict(zip([str(queue).split('/')[-1] for queue in queue_list], queue_list))
+        queue_dict = dict(zip([str(queue).split('/')[-1] for queue in queue_list], queue_list))
 
         for content in pubsub_query:
             subscription_id = content.resource.labels['subscription_id']
-            # queue_url = queue_dict[subscription_id]
+            queue_url = queue_dict[subscription_id]
             count = content.points[0].value.int64_value
-            print(f'{subscription_id}: {count}')
+            print(f'{queue_url}: {count}')
 
     def _callback(self, message):
         print(f'Received {message.data}.')
