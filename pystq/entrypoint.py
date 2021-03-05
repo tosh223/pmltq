@@ -1,8 +1,8 @@
-from pystq.sqs import SqsInterface
-from pystq.pubsub import PubSubInterface
+from pystq.aws import AwsPublisher, AwsSubscriber
+from pystq.gcp import PubSubInterface
 
 def execute():
-    sqs = SqsInterface()
-    sqs.qsize()
-    pubsub = PubSubInterface()
-    pubsub.qsize()
+    aws_publisher = AwsPublisher()
+    aws_publisher.qsize()
+    # pubsub = PubSubInterface()
+    # pubsub.qsize()

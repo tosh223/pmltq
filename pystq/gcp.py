@@ -6,26 +6,20 @@ from google.cloud.pubsub_v1.publisher.client import publisher_client
 from google.cloud.pubsub_v1.subscriber.client import subscriber_client
 from google.cloud.monitoring_v3 import query, MetricServiceClient
 
-from pystq.base import BaseInterface
+from pystq.base import BaseTopic, BasePublisher, BaseSubscriber
 
-class PubSubInterface(BaseInterface):
+class GcpTopic(BaseTopic):
 
     PROJECT = os.environ['GCP_PROJECT']
     TIMEOUT = 5.0
     METRIC_TYPE = 'pubsub.googleapis.com/subscription/num_undelivered_messages'
 
-    @profile
     def __init__(self):
         super().__init__()
+
         self._publisher = publisher_client.PublisherClient()
-        self._subscriber = subscriber_client.SubscriberClient()
         project_path = self._publisher.common_project_path(self.PROJECT)
-
-        # topics
         self._topic_list = [queue.name for queue in self._publisher.list_topics(project=project_path)]
-
-        # subscriptions
-        self._subscription_list = [queue.name for queue in self._subscriber.list_subscriptions(project=project_path)]
 
     @property
     def topic_list(self):
@@ -34,6 +28,19 @@ class PubSubInterface(BaseInterface):
     @property
     def subscription_list(self):
         return self._subscription_list
+
+class GcpPublisher(BasePublisher):
+
+    PROJECT = os.environ['GCP_PROJECT']
+    TIMEOUT = 5.0
+    METRIC_TYPE = 'pubsub.googleapis.com/subscription/num_undelivered_messages'
+
+    def __init__(self):
+        super().__init__()
+        self._publisher = publisher_client.PublisherClient()
+
+        # topics
+        self._topic_list = [queue.name for queue in self._publisher.list_topics(project=project_path)]
 
     def qsize(self, queue_list :list=None):
         if not queue_list:
