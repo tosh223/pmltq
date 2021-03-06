@@ -1,3 +1,3 @@
-# pymsghub
+# pyqueuinghub
 
-Multi-cloud message hub for Python
+Multi-cloud Queuing Hub for Python
