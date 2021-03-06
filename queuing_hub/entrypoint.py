@@ -1,5 +1,5 @@
-from msghub.aws import AwsPublisher, AwsSubscriber
-from msghub.gcp import GcpPublisher, GcpSubscriber
+from queuing_hub.aws import AwsPublisher, AwsSubscriber
+from queuing_hub.gcp import GcpPublisher, GcpSubscriber
 
 def execute():
     aws_subscriber = AwsSubscriber()

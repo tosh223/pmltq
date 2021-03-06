@@ -5,7 +5,7 @@ from concurrent.futures import TimeoutError
 from google.cloud import pubsub_v1
 from google.cloud.monitoring_v3 import query, MetricServiceClient
 
-from msghub.base import BasePublisher, BaseSubscriber
+from queuing_hub.base import BasePublisher, BaseSubscriber
 
 PROJECT = os.environ['GCP_PROJECT']
 

@@ -1,6 +1,6 @@
 import boto3
 
-from msghub.base import BasePublisher, BaseSubscriber
+from queuing_hub.base import BasePublisher, BaseSubscriber
 
 class AwsBase():
 

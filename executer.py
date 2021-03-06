@@ -1,4 +1,4 @@
-from msghub import entrypoint
+from queuing_hub import entrypoint
 
 def main():
     entrypoint.execute()
