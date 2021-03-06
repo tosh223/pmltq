@@ -1,4 +1,4 @@
-from pystq import entrypoint
+from msghub import entrypoint
 
 def main():
     entrypoint.execute()
