@@ -1,3 +1,3 @@
-# pystq
+# pymsghub
 
-Spanning Tree Queue for Python
+Multi-cloud message hub for Python
