@@ -43,6 +43,9 @@ class GcpSubscriber(BaseSubscriber):
         project_path = self._sub_client.common_project_path(PROJECT)
         self._subscription_list = [queue.name for queue in self._sub_client.list_subscriptions(project=project_path)]
 
+    def __del__(self):
+        self._subscriber.close()
+
     def qsize(self, subscription_list :list=None):
         if not subscription_list:
             subscription_list = self._subscription_list
