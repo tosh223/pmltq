@@ -25,7 +25,7 @@ class GcpPublisher(BasePublisher):
     def topic_list(self):
         return self._topic_list
 
-    def put(self):
+    def put(self, topic, body):
         pass
 
 
@@ -46,6 +46,10 @@ class GcpSubscriber(BaseSubscriber):
     def __del__(self):
         self._subscriber.close()
 
+    @property
+    def subscription_list(self):
+        return self._subscription_list
+
     def qsize(self, subscription_list :list=None):
         if not subscription_list:
             subscription_list = self._subscription_list
@@ -59,13 +63,13 @@ class GcpSubscriber(BaseSubscriber):
         )
 
         for content in pubsub_query:
-            subscription_id = content.resource.labels['subscription_id']
-            subscription_path = self._sub_client.subscription_path(PROJECT, subscription_id)
+            subscription = content.resource.labels['subscription_id']
+            subscription_path = self._sub_client.subscription_path(PROJECT, subscription)
             count = content.points[0].value.int64_value
             print(f'{subscription_path}: {count}')
 
-    def get(self, subscription_id):
-        subscription_path = self._sub_client.subscription_path(PROJECT, subscription_id)
+    def get(self, subscription):
+        subscription_path = self._sub_client.subscription_path(PROJECT, subscription)
         streaming_pull_future = self._subscriber.subscribe(subscription_path, callback=self.__callback)
         print(f"Listening for messages on {subscription_path}..\n")
 
@@ -75,6 +79,15 @@ class GcpSubscriber(BaseSubscriber):
             except TimeoutError:
                 streaming_pull_future.cancel()
 
+    def is_empty(self, subscription) -> bool:
+        pass
+
+    def tasl_done(self):
+        pass
+
+    def join(self):
+        pass
+
     def __callback(self, message):
         print(f'Received {message.data}.')
         if message.attributes:
@@ -83,9 +96,3 @@ class GcpSubscriber(BaseSubscriber):
                 value = message.attributes.get(key)
                 print(f'{key}: {value}')
         message.ack()
-
-    def tasl_done(self):
-        pass
-
-    def join(self):
-        pass

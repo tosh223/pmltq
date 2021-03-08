@@ -10,11 +10,7 @@ class AwsBase():
         else:
             session = boto3.Session()
             self._client = session.client('sqs')
-        self._topic_list = self._client.list_queues()['QueueUrls']
-
-    @property
-    def topic_list(self):
-        return self._topic_list
+        self._queue_list = self._client.list_queues()['QueueUrls']
 
 
 class AwsPublisher(AwsBase, BasePublisher):
@@ -23,8 +19,17 @@ class AwsPublisher(AwsBase, BasePublisher):
         AwsBase.__init__(self, client=client)
         BasePublisher.__init__(self)
 
-    def put(self, topic):
-        pass
+    @property
+    def topic_list(self):
+        return self._queue_list
+
+    def put(self, topic, body):
+        response = self._client.send_message(
+            QueueUrl = topic,
+            MessageBody = body,
+
+        )
+        return response
 
 
 class AwsSubscriber(AwsBase, BaseSubscriber):
@@ -43,30 +48,37 @@ class AwsSubscriber(AwsBase, BaseSubscriber):
         AwsBase.__init__(self, client=client)
         BaseSubscriber.__init__(self)
 
-    def _get_attributes(self, queue_url, attribute_names):
-        response= self._client.get_queue_attributes(
-            QueueUrl=queue_url,
-            AttributeNames=attribute_names
-        )
-        return response['Attributes']
+    @property
+    def subscription_list(self):
+        return self._queue_list
 
     def qsize(self, subscription_list :list=None):
         if not subscription_list:
-            subscription_list = self._topic_list
+            subscription_list = self._queue_list
 
         for subscription in subscription_list:
-            attributes = self._get_attributes(subscription, self.ATTRIBUTE_NAMES)
-            count = attributes[self.ATTRIBUTE_NAMES[0]]
-            print(f'{subscription}: {count}')
+            message_count = self._get_message_count(subscription)
+            print(f'{subscription}: {message_count}')
 
-    def empty(self, topic) -> bool:
-        pass
+    def is_empty(self, subscription) -> bool:
+        return self._get_message_count(subscription) == 0
 
-    def get(self, queue_url, block=True, timeout=None):
-        return self._client.receive_message(QueueUrl=queue_url)
+    def get(self, subscription):
+        return self._client.receive_message(QueueUrl=subscription)
 
     def tasl_done(self):
         pass
 
     def join(self):
         pass
+
+    def _get_message_count(self, subscription):
+        attributes = self._get_attributes(subscription, self.ATTRIBUTE_NAMES)
+        return int(attributes[self.ATTRIBUTE_NAMES[0]])
+
+    def _get_attributes(self, subscription, attribute_names):
+        response= self._client.get_queue_attributes(
+            QueueUrl=subscription,
+            AttributeNames=attribute_names
+        )
+        return response['Attributes']

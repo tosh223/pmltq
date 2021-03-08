@@ -2,27 +2,22 @@ class BasePublisher():
     def __init__(self):
         pass
 
-    def put(self, topic, item, block=True, timeout=None):
+    def put(self, topic, body):
         pass
 
-    def put_nowait(self, topic, item):
-        self.put(topic, item, block=False)
 
 class BaseSubscriber():
     def __init__(self):
         pass
 
-    def qsize(self, topic) -> int:
+    def qsize(self, subscription_list):
         pass
 
-    def empty(self, topic) -> bool:
+    def is_empty(self, subscription):
         pass
 
-    def get(self, topic, block=True, timeout=None):
+    def get(self, subscription):
         pass
-
-    def get_nowait(self, topic):
-        self.get(topic, block=False)
 
     def tasl_done(self):
         pass
