@@ -26,8 +26,7 @@ class AwsPublisher(AwsBase, BasePublisher):
     def put(self, topic, body):
         response = self._client.send_message(
             QueueUrl = topic,
-            MessageBody = body,
-
+            MessageBody = body
         )
         return response
 
@@ -63,11 +62,24 @@ class AwsSubscriber(AwsBase, BaseSubscriber):
     def is_empty(self, subscription) -> bool:
         return self._get_message_count(subscription) == 0
 
-    def get(self, subscription):
-        return self._client.receive_message(QueueUrl=subscription)
+    def get(self, subscription, max_num=1):
+        messages = []
+        response = self._client.receive_message(
+            QueueUrl=subscription,
+            MaxNumberOfMessages=max_num
+        )
 
-    def tasl_done(self):
-        pass
+        for message in response['Messages']:
+            messages.append(message)
+            self.task_done(subscription, message['ReceiptHandle'])
+
+        return messages
+
+    def task_done(self, subscription, receipt_handle):
+        self._client.delete_message(
+            QueueUrl=subscription,
+            ReceiptHandle=receipt_handle
+        )
 
     def join(self):
         pass

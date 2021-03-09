@@ -82,7 +82,7 @@ class GcpSubscriber(BaseSubscriber):
     def is_empty(self, subscription) -> bool:
         pass
 
-    def tasl_done(self):
+    def task_done(self):
         pass
 
     def join(self):

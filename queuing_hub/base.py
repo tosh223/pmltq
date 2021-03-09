@@ -19,7 +19,7 @@ class BaseSubscriber():
     def get(self, subscription):
         pass
 
-    def tasl_done(self):
+    def task_done(self):
         pass
 
     def join(self):
