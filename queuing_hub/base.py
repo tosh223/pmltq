@@ -19,8 +19,5 @@ class BaseSubscriber():
     def get(self, subscription):
         pass
 
-    def task_done(self):
-        pass
-
-    def join(self):
+    def _task_done(self):
         pass

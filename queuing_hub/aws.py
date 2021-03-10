@@ -62,6 +62,9 @@ class AwsSubscriber(AwsBase, BaseSubscriber):
     def is_empty(self, subscription) -> bool:
         return self._get_message_count(subscription) == 0
 
+    def purge(self, subscription):
+        self._client.purge_queue(QueueUrl=subscription)
+
     def get(self, subscription, max_num=1):
         messages = []
         response = self._client.receive_message(
@@ -71,18 +74,15 @@ class AwsSubscriber(AwsBase, BaseSubscriber):
 
         for message in response['Messages']:
             messages.append(message)
-            self.task_done(subscription, message['ReceiptHandle'])
+            self._task_done(subscription, message['ReceiptHandle'])
 
         return messages
 
-    def task_done(self, subscription, receipt_handle):
+    def _task_done(self, subscription, receipt_handle):
         self._client.delete_message(
             QueueUrl=subscription,
             ReceiptHandle=receipt_handle
         )
-
-    def join(self):
-        pass
 
     def _get_message_count(self, subscription):
         attributes = self._get_attributes(subscription, self.ATTRIBUTE_NAMES)

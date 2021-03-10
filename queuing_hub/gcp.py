@@ -68,10 +68,9 @@ class GcpSubscriber(BaseSubscriber):
             count = content.points[0].value.int64_value
             print(f'{subscription_path}: {count}')
 
-    def get(self, subscription):
-        subscription_path = self._sub_client.subscription_path(PROJECT, subscription)
-        streaming_pull_future = self._subscriber.subscribe(subscription_path, callback=self.__callback)
-        print(f"Listening for messages on {subscription_path}..\n")
+    def get_streaming(self, subscription):
+        streaming_pull_future = self._subscriber.subscribe(subscription, callback=self.__callback)
+        print(f"Listening for messages on {subscription}..\n")
 
         with self._subscriber:
             try:
@@ -82,14 +81,15 @@ class GcpSubscriber(BaseSubscriber):
     def is_empty(self, subscription) -> bool:
         pass
 
-    def task_done(self):
-        pass
-
-    def join(self):
-        pass
+    def purge(self, subscription):
+        seek_request = pubsub_v1.types.pubsub_gapic_types.SeekRequest(
+            subscription=subscription,
+            time=datetime.now()
+        )
+        self._sub_client.seek(request=seek_request)
 
     def __callback(self, message):
-        print(f'Received {message.data}.')
+        print(f'Received {message.data.decode()}.')
         if message.attributes:
             print('Attributes:')
             for key in message.attributes:
