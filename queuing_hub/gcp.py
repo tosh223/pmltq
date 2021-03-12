@@ -51,6 +51,7 @@ class GcpSubscriber(BaseSubscriber):
         return self._subscription_list
 
     def qsize(self, subscription_list :list=None):
+        response = {}
         if not subscription_list:
             subscription_list = self._subscription_list
 
@@ -65,8 +66,9 @@ class GcpSubscriber(BaseSubscriber):
         for content in pubsub_query:
             subscription = content.resource.labels['subscription_id']
             subscription_path = self._sub_client.subscription_path(PROJECT, subscription)
-            count = content.points[0].value.int64_value
-            print(f'{subscription_path}: {count}')
+            response[subscription_path] = content.points[0].value.int64_value
+        
+        return response
 
     def get_streaming(self, subscription):
         streaming_pull_future = self._subscriber.subscribe(subscription, callback=self.__callback)

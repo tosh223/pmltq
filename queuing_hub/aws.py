@@ -52,12 +52,14 @@ class AwsSubscriber(AwsBase, BaseSubscriber):
         return self._queue_list
 
     def qsize(self, subscription_list :list=None):
+        response = {}
         if not subscription_list:
             subscription_list = self._queue_list
 
         for subscription in subscription_list:
-            message_count = self._get_message_count(subscription)
-            print(f'{subscription}: {message_count}')
+            response[subscription] = self._get_message_count(subscription)
+        
+        return response
 
     def is_empty(self, subscription) -> bool:
         return self._get_message_count(subscription) == 0
