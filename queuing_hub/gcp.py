@@ -70,6 +70,9 @@ class GcpSubscriber(BaseSubscriber):
         
         return response
 
+    def is_empty(self, subscription) -> bool:
+        return self.qsize([subscription])[subscription] == 0
+
     def get_streaming(self, subscription):
         streaming_pull_future = self._subscriber.subscribe(subscription, callback=self.__callback)
         print(f"Listening for messages on {subscription}..\n")
@@ -79,9 +82,6 @@ class GcpSubscriber(BaseSubscriber):
                 streaming_pull_future.result(timeout=self.TIMEOUT)
             except TimeoutError:
                 streaming_pull_future.cancel()
-
-    def is_empty(self, subscription) -> bool:
-        pass
 
     def purge(self, subscription):
         seek_request = pubsub_v1.types.pubsub_gapic_types.SeekRequest(

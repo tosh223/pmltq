@@ -13,5 +13,7 @@ def execute():
     print(gcp_sub_list)
     print(gcp_subscriber.qsize())
     print(gcp_subscriber.is_empty(gcp_sub_list[0]))
+    print(gcp_subscriber.is_empty(gcp_sub_list[1]))
+    print(gcp_subscriber.is_empty(gcp_sub_list[2]))
     gcp_subscriber.purge(gcp_sub_list[0])
     gcp_subscriber.get_streaming(gcp_sub_list[2])
