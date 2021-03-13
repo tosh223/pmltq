@@ -10,6 +10,7 @@ class AwsBase():
         else:
             session = boto3.Session()
             self._client = session.client('sqs')
+            print(self._client)
         self._queue_list = self._client.list_queues()['QueueUrls']
 
 
@@ -20,10 +21,10 @@ class AwsPublisher(AwsBase, BasePublisher):
         BasePublisher.__init__(self)
 
     @property
-    def topic_list(self):
+    def topic_list(self) -> list:
         return self._queue_list
 
-    def put(self, topic, body):
+    def put(self, topic: str, body: str) -> dict:
         response = self._client.send_message(
             QueueUrl = topic,
             MessageBody = body
@@ -48,10 +49,10 @@ class AwsSubscriber(AwsBase, BaseSubscriber):
         BaseSubscriber.__init__(self)
 
     @property
-    def subscription_list(self):
+    def subscription_list(self) -> list:
         return self._queue_list
 
-    def qsize(self, subscription_list :list=None):
+    def qsize(self, subscription_list: list=None) -> dict:
         response = {}
         if not subscription_list:
             subscription_list = self._queue_list
@@ -61,13 +62,13 @@ class AwsSubscriber(AwsBase, BaseSubscriber):
         
         return response
 
-    def is_empty(self, subscription) -> bool:
+    def is_empty(self, subscription: str) -> bool:
         return self._get_message_count(subscription) == 0
 
-    def purge(self, subscription):
+    def purge(self, subscription: str) -> None:
         self._client.purge_queue(QueueUrl=subscription)
 
-    def get(self, subscription, max_num=1):
+    def get(self, subscription: str, max_num: int=1):
         messages = []
         response = self._client.receive_message(
             QueueUrl=subscription,
@@ -80,17 +81,17 @@ class AwsSubscriber(AwsBase, BaseSubscriber):
 
         return messages
 
-    def _task_done(self, subscription, receipt_handle):
+    def _task_done(self, subscription: str, receipt_handle: str) -> None:
         self._client.delete_message(
             QueueUrl=subscription,
             ReceiptHandle=receipt_handle
         )
 
-    def _get_message_count(self, subscription):
+    def _get_message_count(self, subscription: str) -> int:
         attributes = self._get_attributes(subscription, self.ATTRIBUTE_NAMES)
         return int(attributes[self.ATTRIBUTE_NAMES[0]])
 
-    def _get_attributes(self, subscription, attribute_names):
+    def _get_attributes(self, subscription: str, attribute_names: str) -> dict:
         response= self._client.get_queue_attributes(
             QueueUrl=subscription,
             AttributeNames=attribute_names

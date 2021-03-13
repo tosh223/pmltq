@@ -22,7 +22,7 @@ class GcpPublisher(BasePublisher):
         self._topic_list = [queue.name for queue in self._pub_client.list_topics(project=project_path)]
 
     @property
-    def topic_list(self):
+    def topic_list(self) -> list:
         return self._topic_list
 
     def put(self, topic, body):
@@ -47,10 +47,10 @@ class GcpSubscriber(BaseSubscriber):
         self._subscriber.close()
 
     @property
-    def subscription_list(self):
+    def subscription_list(self) -> list:
         return self._subscription_list
 
-    def qsize(self, subscription_list :list=None):
+    def qsize(self, subscription_list: list=None) -> dict:
         response = {}
         if not subscription_list:
             subscription_list = self._subscription_list
@@ -70,10 +70,13 @@ class GcpSubscriber(BaseSubscriber):
         
         return response
 
-    def is_empty(self, subscription) -> bool:
+    def is_empty(self, subscription: str) -> bool:
         return self.qsize([subscription])[subscription] == 0
 
-    def get_streaming(self, subscription):
+    def get(self, subscription: str):
+        pass
+
+    def get_streaming(self, subscription: str):
         streaming_pull_future = self._subscriber.subscribe(subscription, callback=self.__callback)
         print(f"Listening for messages on {subscription}..\n")
 
@@ -83,7 +86,7 @@ class GcpSubscriber(BaseSubscriber):
             except TimeoutError:
                 streaming_pull_future.cancel()
 
-    def purge(self, subscription):
+    def purge(self, subscription: str):
         seek_request = pubsub_v1.types.pubsub_gapic_types.SeekRequest(
             subscription=subscription,
             time=datetime.now()
