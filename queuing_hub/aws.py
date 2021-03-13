@@ -10,7 +10,6 @@ class AwsBase():
         else:
             session = boto3.Session()
             self._client = session.client('sqs')
-            print(self._client)
         self._queue_list = self._client.list_queues()['QueueUrls']
 
 

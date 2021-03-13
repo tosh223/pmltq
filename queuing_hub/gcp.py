@@ -25,9 +25,14 @@ class GcpPublisher(BasePublisher):
     def topic_list(self) -> list:
         return self._topic_list
 
-    def put(self, topic, body):
-        pass
+    def put(self, topic: str, body: str) -> None:
+        future = self._publisher.publish(topic, body.encode())
+        future.add_done_callback(self._callback)
 
+    @staticmethod
+    def _callback(future):
+        message_id = future.result()
+        print(f'MessageId {message_id} has published! ')
 
 class GcpSubscriber(BaseSubscriber):
 
