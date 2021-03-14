@@ -67,7 +67,7 @@ class AwsSubscriber(AwsBase, BaseSubscriber):
     def purge(self, subscription: str) -> None:
         self._client.purge_queue(QueueUrl=subscription)
 
-    def get(self, subscription: str, max_num: int=1):
+    def get(self, subscription: str, max_num: int=1) -> list:
         messages = []
         response = self._client.receive_message(
             QueueUrl=subscription,

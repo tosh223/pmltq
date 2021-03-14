@@ -16,7 +16,7 @@ class BaseSubscriber():
     def is_empty(self, subscription):
         pass
 
-    def get(self, subscription):
+    def get(self, subscription, max_num):
         pass
 
     def _task_done(self):
