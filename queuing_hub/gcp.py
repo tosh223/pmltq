@@ -90,8 +90,6 @@ class GcpSubscriber(BaseSubscriber):
         for msg in response.received_messages:
             messages.append(msg.message.data.decode())
 
-        self.__ack(subscription, response.received_messages)
-
         return messages
 
     def get_streaming(self, subscription: str) -> None:
@@ -114,7 +112,7 @@ class GcpSubscriber(BaseSubscriber):
         )
         self._client_sync.seek(request=seek_request)
 
-    def __ack(self, subscription, messages) -> None:
+    def ack(self, subscription, messages) -> None:
         ack_ids = [msg.ack_id for msg in messages]
         self._client_sync.acknowledge(
             request={

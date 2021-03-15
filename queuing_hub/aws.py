@@ -76,15 +76,16 @@ class AwsSubscriber(AwsBase, BaseSubscriber):
 
         for message in response['Messages']:
             messages.append(message)
-            self._task_done(subscription, message['ReceiptHandle'])
 
         return messages
 
-    def _task_done(self, subscription: str, receipt_handle: str) -> None:
-        self._client.delete_message(
-            QueueUrl=subscription,
-            ReceiptHandle=receipt_handle
-        )
+    def ack(self, subscription: str, messages: list) -> None:
+        receipt_handle_list = [message['ReceiptHandle'] for message in messages]
+        for receipt_handle in receipt_handle_list:
+            self._client.delete_message(
+                QueueUrl=subscription,
+                ReceiptHandle=receipt_handle
+            )
 
     def _get_message_count(self, subscription: str) -> int:
         attributes = self._get_attributes(subscription, self.ATTRIBUTE_NAMES)
