@@ -60,18 +60,16 @@ class GcpSubscriber(BaseSubscriber):
         if not subscription_list:
             subscription_list = self._subscription_list
 
-        pubsub_query = query.Query(
-            MetricServiceClient(),
-            PROJECT,
+        query_results = query.Query(
+            client=MetricServiceClient(),
+            project=PROJECT,
             metric_type=self.METRIC_TYPE,
             end_time=datetime.now(),
             minutes=2   # if set 1 minute, we get nothing while creating the latest metrics.
         )
 
-        for content in pubsub_query:
-            subscription = content.resource.labels['subscription_id']
-            subscription_path = self._client_sync.subscription_path(PROJECT, subscription)
-            response[subscription_path] = content.points[0].value.int64_value
+        for result in self.__read_metric(query_results):
+            response[result['subscription']] = result['value']
         
         return response
 
@@ -120,6 +118,15 @@ class GcpSubscriber(BaseSubscriber):
                 "ack_ids": ack_ids,
             }
         )
+
+    def __read_metric(self, query: query.Query) -> dict:
+        for content in query:
+            subscription_id = content.resource.labels['subscription_id']
+            subscription = self._client_sync.subscription_path(PROJECT, subscription_id)
+            yield {
+                'subscription': subscription,
+                'value': content.points[0].value.int64_value
+            }
 
     def __streaming_pull_callback(self, message):
         print(f'Received {message.data.decode()}.')
