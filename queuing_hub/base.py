@@ -19,5 +19,5 @@ class BaseSubscriber():
     def get(self, subscription, max_num):
         pass
 
-    def _task_done(self):
+    def ack(self, subscription, messages):
         pass
