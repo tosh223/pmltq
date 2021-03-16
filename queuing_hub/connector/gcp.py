@@ -5,7 +5,7 @@ from concurrent.futures import TimeoutError
 from google.cloud import pubsub_v1
 from google.cloud.monitoring_v3 import query, MetricServiceClient
 
-from queuing_hub.base import BasePublisher, BaseSubscriber
+from queuing_hub.connector.base import BasePublisher, BaseSubscriber
 
 PROJECT = os.environ['GCP_PROJECT']
 
@@ -56,7 +56,7 @@ class GcpSubscriber(BaseSubscriber):
         return self._subscription_list
 
     def qsize(self, subscription_list: list=None) -> dict:
-        response = {}
+        response = {'gcp': {}}
         if not subscription_list:
             subscription_list = self._subscription_list
 
@@ -69,7 +69,7 @@ class GcpSubscriber(BaseSubscriber):
         )
 
         for result in self.__read_metric(query_results):
-            response[result['subscription']] = result['value']
+            response['gcp'][result['subscription']] = result['value']
         
         return response
 

@@ -1,6 +1,6 @@
 import boto3
 
-from queuing_hub.base import BasePublisher, BaseSubscriber
+from queuing_hub.connector.base import BasePublisher, BaseSubscriber
 
 class AwsBase():
 
@@ -52,12 +52,12 @@ class AwsSubscriber(AwsBase, BaseSubscriber):
         return self._queue_list
 
     def qsize(self, subscription_list: list=None) -> dict:
-        response = {}
+        response = {'aws': {}}
         if not subscription_list:
             subscription_list = self._queue_list
 
         for subscription in subscription_list:
-            response[subscription] = self._get_message_count(subscription)
+            response['aws'][subscription] = self._get_message_count(subscription)
         
         return response
 
