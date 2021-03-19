@@ -1,21 +1,22 @@
+import re
+
 from queuing_hub.connector.base import BaseSubscriber as Base
 from queuing_hub.connector.aws import AwsSubscriber as Aws
 from queuing_hub.connector.gcp import GcpSubscriber as Gcp
 
 class Subscriber:
 
-    connectors: list(Base) = [Aws(), Gcp()]
-
     def __init__(self):
+        self.__connectors: list(Base) = [Aws(), Gcp()]
         self.__sub_conf = {}
         self.__sub_list = []
-        # type, path, priority
+        # path, priority
 
         self.__get_priority_sub()
 
     def qsize(self):
         response = {}
-        for connector in self.connectors:
+        for connector in self.__connectors:
             response.update(connector.qsize())
         return response
 
@@ -24,10 +25,9 @@ class Subscriber:
         connector: Base
 
         for sub in self.__sub_list:
-            connector = self.__get_connector(sub['type'])
-            if connector is None:
-                raise Exception()
-            response = connector.get(sub['path'], max_num)
+            sub_path = sub['path']
+            connector = self.__get_connector(sub_path)
+            response = connector.get(sub_path, max_num)
             if response != {}:
                 break
 
@@ -41,13 +41,18 @@ class Subscriber:
                 self.__sub_list.append(self.__sub_conf[key])
 
     @staticmethod
-    def __get_connector(type_str: str):
-        conn_type = str(type_str).upper()
-        if conn_type == 'AWS':
+    def __get_connector(sub_path: str) -> Base:
+        if re.search(
+            r'https://.+-.+-.+\.queue\.amazonaws\.com/[0-9]+/.+',
+            sub_path
+        ):
             connector = Aws()
-        elif conn_type == 'GCP':
+        elif re.search(
+            r'projects/[a-z0-9-]+/subscriptions/.+',
+            sub_path
+        ):
             connector = Gcp()
         else:
-            connector = None
+            raise Exception()
         
         return connector
