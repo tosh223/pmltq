@@ -9,37 +9,35 @@ class Subscriber:
 
     def __init__(self):
         self.__connectors: list(Base) = [Aws(), Gcp()]
-        self.__sub_conf = {}
-        self.__sub_list = []
-        # path, priority
+        self._sub_list = []
 
-        self.__get_priority_sub()
+    @property
+    def sub_list(self) -> list:
+        return self._sub_list
 
-    def qsize(self):
+    @sub_list.setter
+    def sub_list(self, sub_list: list):
+        if type(sub_list) != list:
+            raise TypeError('sub_list must be list type.')
+        self._sub_list = sub_list
+
+    def qsize(self) -> str:
         response = {}
         for connector in self.__connectors:
             response.update(connector.qsize())
         return json.dumps(response, indent=2)
 
-    def get(self, max_num):
+    def get(self, max_num: int) -> list:
         response = {}
         connector: Base
 
-        for sub in self.__sub_list:
-            sub_path = sub['path']
-            connector = self.__get_connector(sub_path)
-            response = connector.get(sub_path, max_num)
+        for sub in self._sub_list:
+            connector = self.__get_connector(sub)
+            response = connector.get(sub, max_num)
             if response != {}:
                 break
 
         return response
-
-    def __get_priority_sub(self):
-        for i, key in enumerate(self.__sub_conf):
-            subs = [x['path'] for x in self.__sub_conf if x['priority'] == i]
-            sub = subs[0] if subs else None
-            if sub:
-                self.__sub_list.append(self.__sub_conf[key])
 
     @staticmethod
     def __get_connector(sub_path: str) -> Base:
@@ -54,6 +52,6 @@ class Subscriber:
         ):
             connector = Gcp()
         else:
-            raise Exception()
+            raise ValueError(f'invalid subscription: {sub_path}')
         
         return connector

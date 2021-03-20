@@ -9,6 +9,9 @@ from queuing_hub.subscriber import Subscriber
 def execute():
     sub = Subscriber()
     print(sub.qsize())
+    sub.sub_list = ['projects/alert-tine-289008/subscriptions/test-topic-sub']
+
+    print(sub.get(1))
 
     # aws_publisher = AwsPublisher()
     # aws_topic_list = aws_publisher.topic_list
