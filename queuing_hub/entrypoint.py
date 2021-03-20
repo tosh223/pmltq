@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 
 from queuing_hub.connector.aws import AwsPublisher, AwsSubscriber
 from queuing_hub.connector.gcp import GcpPublisher, GcpSubscriber
@@ -8,7 +9,6 @@ from queuing_hub.subscriber import Subscriber
 def execute():
     sub = Subscriber()
     print(sub.qsize())
-
 
     # aws_publisher = AwsPublisher()
     # aws_topic_list = aws_publisher.topic_list

@@ -1,4 +1,5 @@
 import re
+import json
 
 from queuing_hub.connector.base import BaseSubscriber as Base
 from queuing_hub.connector.aws import AwsSubscriber as Aws
@@ -18,7 +19,7 @@ class Subscriber:
         response = {}
         for connector in self.__connectors:
             response.update(connector.qsize())
-        return response
+        return json.dumps(response, indent=2)
 
     def get(self, max_num):
         response = {}
