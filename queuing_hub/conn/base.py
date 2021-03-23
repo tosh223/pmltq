@@ -2,7 +2,7 @@ class BasePub():
     def __init__(self):
         pass
 
-    def push(self, topic, body):
+    def push(self, topic: str, body: str):
         pass
 
 
@@ -16,7 +16,7 @@ class BaseSub():
     def is_empty(self, subscription):
         pass
 
-    def pull(self, subscription, max_num):
+    def pull(self, sub: str, max_num: int=1):
         pass
 
     def ack(self, subscription, messages):
