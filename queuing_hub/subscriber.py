@@ -1,14 +1,14 @@
-import re
 import json
 
-from queuing_hub.connector.base import BaseSubscriber as Base
-from queuing_hub.connector.aws import AwsSubscriber as Aws
-from queuing_hub.connector.gcp import GcpSubscriber as Gcp
+from queuing_hub.conn.base import BaseSub
+from queuing_hub.conn.aws import AwsSub
+from queuing_hub.conn.gcp import GcpSub
+from queuing_hub.util import get_connector
 
 class Subscriber:
 
     def __init__(self):
-        self.__connectors: list(Base) = [Aws(), Gcp()]
+        self.__connectors: list(BaseSub) = [AwsSub(), GcpSub()]
         self._sub_list = []
 
     @property
@@ -27,31 +27,14 @@ class Subscriber:
             response.update(connector.qsize())
         return json.dumps(response, indent=2)
 
-    def get(self, max_num: int) -> list:
+    def pull(self, max_num: int) -> list:
         response = {}
-        connector: Base
+        connector: BaseSub
 
         for sub in self._sub_list:
-            connector = self.__get_connector(sub)
-            response = connector.get(sub, max_num)
+            connector = get_connector(sub)
+            response = connector.pull(sub, max_num)
             if response != {}:
                 break
 
         return response
-
-    @staticmethod
-    def __get_connector(sub_path: str) -> Base:
-        if re.search(
-            r'https://.+-.+-.+\.queue\.amazonaws\.com/[0-9]+/.+',
-            sub_path
-        ):
-            connector = Aws()
-        elif re.search(
-            r'projects/[a-z0-9-]+/subscriptions/.+',
-            sub_path
-        ):
-            connector = Gcp()
-        else:
-            raise ValueError(f'invalid subscription: {sub_path}')
-        
-        return connector

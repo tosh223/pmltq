@@ -1,6 +1,6 @@
 import boto3
 
-from queuing_hub.connector.base import BasePublisher, BaseSubscriber
+from queuing_hub.conn.base import BasePub, BaseSub
 
 class AwsBase():
 
@@ -13,17 +13,17 @@ class AwsBase():
         self._queue_list = self._client.list_queues()['QueueUrls']
 
 
-class AwsPublisher(AwsBase, BasePublisher):
+class AwsPub(AwsBase, BasePub):
 
     def __init__(self, client=None):
         AwsBase.__init__(self, client=client)
-        BasePublisher.__init__(self)
+        BasePub.__init__(self)
 
     @property
     def topic_list(self) -> list:
         return self._queue_list
 
-    def put(self, topic: str, body: str) -> dict:
+    def push(self, topic: str, body: str) -> dict:
         response = self._client.send_message(
             QueueUrl = topic,
             MessageBody = body
@@ -31,7 +31,7 @@ class AwsPublisher(AwsBase, BasePublisher):
         return response
 
 
-class AwsSubscriber(AwsBase, BaseSubscriber):
+class AwsSub(AwsBase, BaseSub):
 
     ATTRIBUTE_NAMES = [
         'ApproximateNumberOfMessages',
@@ -45,32 +45,32 @@ class AwsSubscriber(AwsBase, BaseSubscriber):
 
     def __init__(self, client=None):
         AwsBase.__init__(self, client=client)
-        BaseSubscriber.__init__(self)
+        BaseSub.__init__(self)
 
     @property
-    def subscription_list(self) -> list:
+    def sub_list(self) -> list:
         return self._queue_list
 
-    def qsize(self, subscription_list: list=None) -> dict:
+    def qsize(self, sub_list: list=None) -> dict:
         response = {'aws': {}}
-        if not subscription_list:
-            subscription_list = self._queue_list
+        if not sub_list:
+            sub_list = self._queue_list
 
-        for subscription in subscription_list:
-            response['aws'][subscription] = self._get_message_count(subscription)
+        for sub in sub_list:
+            response['aws'][sub] = self._get_message_count(sub)
         
         return response
 
-    def is_empty(self, subscription: str) -> bool:
-        return self._get_message_count(subscription) == 0
+    def is_empty(self, sub: str) -> bool:
+        return self._get_message_count(sub) == 0
 
-    def purge(self, subscription: str) -> None:
-        self._client.purge_queue(QueueUrl=subscription)
+    def purge(self, sub: str) -> None:
+        self._client.purge_queue(QueueUrl=sub)
 
-    def get(self, subscription: str, max_num: int=1) -> list:
+    def pull(self, sub: str, max_num: int=1) -> list:
         messages = []
         response = self._client.receive_message(
-            QueueUrl=subscription,
+            QueueUrl=sub,
             MaxNumberOfMessages=max_num
         )
 
@@ -79,21 +79,21 @@ class AwsSubscriber(AwsBase, BaseSubscriber):
 
         return messages
 
-    def ack(self, subscription: str, messages: list) -> None:
+    def ack(self, sub: str, messages: list) -> None:
         receipt_handle_list = [message['ReceiptHandle'] for message in messages]
         for receipt_handle in receipt_handle_list:
             self._client.delete_message(
-                QueueUrl=subscription,
+                QueueUrl=sub,
                 ReceiptHandle=receipt_handle
             )
 
-    def _get_message_count(self, subscription: str) -> int:
-        attributes = self._get_attributes(subscription, self.ATTRIBUTE_NAMES)
+    def _get_message_count(self, sub: str) -> int:
+        attributes = self._get_attributes(sub, self.ATTRIBUTE_NAMES)
         return int(attributes[self.ATTRIBUTE_NAMES[0]])
 
-    def _get_attributes(self, subscription: str, attribute_names: str) -> dict:
+    def _get_attributes(self, sub: str, attribute_names: str) -> dict:
         response= self._client.get_queue_attributes(
-            QueueUrl=subscription,
+            QueueUrl=sub,
             AttributeNames=attribute_names
         )
         return response['Attributes']

@@ -5,12 +5,11 @@ from concurrent.futures import TimeoutError
 from google.cloud import pubsub_v1
 from google.cloud.monitoring_v3 import query, MetricServiceClient
 
-from queuing_hub.connector.base import BasePublisher, BaseSubscriber
+from queuing_hub.conn.base import BasePub, BaseSub
 
 PROJECT = os.environ['GCP_PROJECT']
 
-
-class GcpPublisher(BasePublisher):
+class GcpPub(BasePub):
 
     def __init__(self):
         super().__init__()
@@ -25,7 +24,7 @@ class GcpPublisher(BasePublisher):
     def topic_list(self) -> list:
         return self._topic_list
 
-    def put(self, topic: str, body: str) -> None:
+    def push(self, topic: str, body: str) -> None:
         future = self._publisher.publish(topic, body.encode())
         future.add_done_callback(self._callback)
 
@@ -34,7 +33,7 @@ class GcpPublisher(BasePublisher):
         message_id = future.result()
         print(f'MessageId {message_id} has published! ')
 
-class GcpSubscriber(BaseSubscriber):
+class GcpSub(BaseSub):
 
     TIMEOUT = 5.0
     METRIC_TYPE = 'pubsub.googleapis.com/subscription/num_undelivered_messages'
@@ -46,19 +45,19 @@ class GcpSubscriber(BaseSubscriber):
 
         # subscriptions
         project_path = self._client_sync.common_project_path(PROJECT)
-        self._subscription_list = [queue.name for queue in self._client_sync.list_subscriptions(project=project_path)]
+        self._sub_list = [queue.name for queue in self._client_sync.list_subscriptions(project=project_path)]
 
     def __del__(self):
         self._client_async.close()
 
     @property
-    def subscription_list(self) -> list:
-        return self._subscription_list
+    def sub_list(self) -> list:
+        return self._sub_list
 
-    def qsize(self, subscription_list: list=None) -> dict:
+    def qsize(self, sub_list: list=None) -> dict:
         response = {'gcp': {}}
-        if not subscription_list:
-            subscription_list = self._subscription_list
+        if not sub_list:
+            sub_list = self._sub_list
 
         query_results = query.Query(
             client=MetricServiceClient(),
@@ -73,14 +72,14 @@ class GcpSubscriber(BaseSubscriber):
         
         return response
 
-    def is_empty(self, subscription: str) -> bool:
-        return self.qsize([subscription])[subscription] == 0
+    def is_empty(self, sub: str) -> bool:
+        return self.qsize([sub])[sub] == 0
 
-    def get(self, subscription: str, max_num: int=1) -> list:
+    def pull(self, sub: str, max_num: int=1) -> list:
         messages = []
         response = self._client_sync.pull(
             request={
-                'subscription': subscription,
+                'subscription': sub,
                 "max_messages": max_num,
             }
         )
@@ -90,12 +89,12 @@ class GcpSubscriber(BaseSubscriber):
 
         return messages
 
-    def get_streaming(self, subscription: str) -> None:
+    def pull_streaming(self, sub: str) -> None:
         streaming_pull_future = self._client_async.subscribe(
-            subscription,
+            sub,
             callback=self.__streaming_pull_callback
         )
-        print(f"Listening for messages on {subscription}..\n")
+        print(f"Listening for messages on {sub}..\n")
 
         with self._client_async:
             try:
@@ -103,28 +102,28 @@ class GcpSubscriber(BaseSubscriber):
             except TimeoutError:
                 streaming_pull_future.cancel()
 
-    def purge(self, subscription: str) -> None:
+    def purge(self, sub: str) -> None:
         seek_request = pubsub_v1.types.pubsub_gapic_types.SeekRequest(
-            subscription=subscription,
+            subscription=sub,
             time=datetime.now()
         )
         self._client_sync.seek(request=seek_request)
 
-    def ack(self, subscription: str, messages: list) -> None:
+    def ack(self, sub: str, messages: list) -> None:
         ack_ids = [msg.ack_id for msg in messages]
         self._client_sync.acknowledge(
             request={
-                "subscription": subscription,
+                "subscription": sub,
                 "ack_ids": ack_ids,
             }
         )
 
     def __read_metric(self, query: query.Query) -> dict:
         for content in query:
-            subscription_id = content.resource.labels['subscription_id']
-            subscription = self._client_sync.subscription_path(PROJECT, subscription_id)
+            sub_id = content.resource.labels['subscription_id']
+            sub = self._client_sync.subscription_path(PROJECT, sub_id)
             yield {
-                'subscription': subscription,
+                'subscription': sub,
                 'value': content.points[0].value.int64_value
             }
 

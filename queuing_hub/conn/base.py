@@ -1,12 +1,12 @@
-class BasePublisher():
+class BasePub():
     def __init__(self):
         pass
 
-    def put(self, topic, body):
+    def push(self, topic, body):
         pass
 
 
-class BaseSubscriber():
+class BaseSub():
     def __init__(self):
         pass
 
@@ -16,7 +16,7 @@ class BaseSubscriber():
     def is_empty(self, subscription):
         pass
 
-    def get(self, subscription, max_num):
+    def pull(self, subscription, max_num):
         pass
 
     def ack(self, subscription, messages):
