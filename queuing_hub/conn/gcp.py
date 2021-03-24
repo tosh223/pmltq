@@ -75,7 +75,7 @@ class GcpSub(BaseSub):
     def is_empty(self, sub: str) -> bool:
         return self.qsize([sub])[sub] == 0
 
-    def pull(self, sub: str, max_num: int=1) -> list:
+    def pull(self, sub: str, max_num: int=1, ack: bool=False) -> list:
         messages = []
         response = self._client_sync.pull(
             request={
@@ -86,6 +86,9 @@ class GcpSub(BaseSub):
 
         for msg in response.received_messages:
             messages.append(msg.message.data.decode())
+        
+        if ack:
+            self._ack(sub=sub, messages=response.received_messages)
 
         return messages
 
@@ -109,7 +112,7 @@ class GcpSub(BaseSub):
         )
         self._client_sync.seek(request=seek_request)
 
-    def ack(self, sub: str, messages: list) -> None:
+    def _ack(self, sub: str, messages: list) -> None:
         ack_ids = [msg.ack_id for msg in messages]
         self._client_sync.acknowledge(
             request={

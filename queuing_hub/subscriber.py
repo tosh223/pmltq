@@ -35,17 +35,20 @@ class Subscriber:
             connector = self.__get_connector(sub)
             connector.purge(sub)
 
-    def pull(self, sub_list: list, max_num: int) -> list:
+    def pull(self, sub_list: list, max_num: int, ack: bool=True) -> list:
         response = {}
         connector: BaseSub
 
         for sub in sub_list:
             connector = self.__get_connector(sub)
-            response = connector.pull(sub, max_num)
+            response = connector.pull(sub=sub, max_num=max_num, ack=ack)
             if response != {}:
                 break
 
         return response
+
+    def pull_nack(self, sub_list: list, max_num: int) -> list:
+        return self.pull(sub_list=sub_list, max_num=max_num, ack=False)
 
     @staticmethod
     def __get_connector(sub_path: str) -> BaseSub:

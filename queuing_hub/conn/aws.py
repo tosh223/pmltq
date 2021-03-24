@@ -67,19 +67,18 @@ class AwsSub(AwsBase, BaseSub):
     def purge(self, sub: str) -> None:
         self._client.purge_queue(QueueUrl=sub)
 
-    def pull(self, sub: str, max_num: int=1) -> list:
-        messages = []
+    def pull(self, sub: str, max_num: int=1, ack: bool=False) -> list:
         response = self._client.receive_message(
             QueueUrl=sub,
             MaxNumberOfMessages=max_num
         )
+        
+        if ack:
+            self._ack(sub, response['Messages'])
 
-        for message in response['Messages']:
-            messages.append(message)
+        return response['Messages']
 
-        return messages
-
-    def ack(self, sub: str, messages: list) -> None:
+    def _ack(self, sub: str, messages: list) -> None:
         receipt_handle_list = [message['ReceiptHandle'] for message in messages]
         for receipt_handle in receipt_handle_list:
             self._client.delete_message(

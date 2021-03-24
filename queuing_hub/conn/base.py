@@ -19,8 +19,8 @@ class BaseSub():
     def purge(self, sub: str) -> None:
         pass
 
-    def pull(self, sub: str, max_num: int=1) -> list:
+    def pull(self, sub: str, max_num: int=1, ack: bool=False) -> list:
         pass
 
-    def ack(self, sub: str, messages: list) -> None:
+    def _ack(self, sub: str, messages: list) -> None:
         pass
