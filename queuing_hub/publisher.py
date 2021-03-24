@@ -3,7 +3,6 @@ import re
 from queuing_hub.conn.base import BasePub
 from queuing_hub.conn.aws import AwsPub
 from queuing_hub.conn.gcp import GcpPub
-from queuing_hub.util import get_connector
 
 class Publisher:
 

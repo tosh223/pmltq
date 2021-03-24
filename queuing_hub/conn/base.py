@@ -2,7 +2,7 @@ class BasePub():
     def __init__(self):
         pass
 
-    def push(self, topic: str, body: str):
+    def push(self, topic: str, body: str) -> None:
         pass
 
 
@@ -10,14 +10,17 @@ class BaseSub():
     def __init__(self):
         pass
 
-    def qsize(self, subscription_list):
+    def qsize(self, sub_list: list=None) -> dict:
         pass
 
-    def is_empty(self, subscription):
+    def is_empty(self, sub: str) -> bool:
         pass
 
-    def pull(self, sub: str, max_num: int=1):
+    def purge(self, sub: str) -> None:
         pass
 
-    def ack(self, subscription, messages):
+    def pull(self, sub: str, max_num: int=1) -> list:
+        pass
+
+    def ack(self, sub: str, messages: list) -> None:
         pass

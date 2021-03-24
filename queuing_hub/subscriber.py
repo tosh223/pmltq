@@ -4,7 +4,6 @@ import re
 from queuing_hub.conn.base import BaseSub
 from queuing_hub.conn.aws import AwsSub
 from queuing_hub.conn.gcp import GcpSub
-from queuing_hub.util import get_connector
 
 class Subscriber:
 
@@ -24,12 +23,24 @@ class Subscriber:
             response.update(connector.qsize())
         return json.dumps(response, indent=2)
 
+    def is_empty(self, sub_list: list) -> str:
+        response = {}
+        for sub in sub_list:
+            connector = self.__get_connector(sub)
+            response[sub] = connector.is_empty(sub)
+        return json.dumps(response, indent=2)
+
+    def purge(self, sub_list: list) -> None:
+        for sub in sub_list:
+            connector = self.__get_connector(sub)
+            connector.purge(sub)
+
     def pull(self, sub_list: list, max_num: int) -> list:
         response = {}
         connector: BaseSub
 
         for sub in sub_list:
-            connector = get_connector(sub)
+            connector = self.__get_connector(sub)
             response = connector.pull(sub, max_num)
             if response != {}:
                 break
