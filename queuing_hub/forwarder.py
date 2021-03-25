@@ -3,14 +3,21 @@ from queuing_hub.subscriber import Subscriber
 
 class Forwarder:
 
-    def __init__(self):
+    def __init__(self, sub_list: list, topic_list: list, max_num: int):
         self.publisher = Publisher()
         self.subscriber = Subscriber()
+        self.topic_list = topic_list
+        self.sub_list = sub_list
+        self.max_num = max_num
 
-    def forward(self, sub_list: list, topic_list: list, max_num: int, ack: bool=True):
-        messages = self.subscriber.pull(sub_list=sub_list, max_num=max_num, ack=ack)
+    def transport(self, ack: bool=True):
+        messages = self.subscriber.pull(
+            sub_list=self.sub_list,
+            max_num=self.max_num,
+            ack=ack
+        )
         for message in messages:
-            self.publisher.push(topic_list=topic_list, body=message)
+            self.publisher.push(topic_list=self.topic_list, body=message)
 
-    def forward_nack(self, sub_list: list, topic_list: list, max_num: int):
-        self.forward(sub_list=sub_list, topic_list=topic_list, max_num=max_num, ack=False)
+    def pass_through(self):
+        self.transport(ack=False)

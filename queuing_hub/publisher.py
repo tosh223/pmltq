@@ -16,7 +16,7 @@ class Publisher:
     def topic_list(self) -> list:
         return self._topic_list
 
-    def push(self, topic_list: list, body: str):
+    def push(self, topic_list: list, body: str) -> list:
         response = []
         connector: BasePub
 
