@@ -3,12 +3,19 @@ from queuing_hub.subscriber import Subscriber
 
 class Forwarder:
 
-    def __init__(self, sub: str, topic: str, max_num: int, gcp_credential_path, gcp_project):
+    def __init__(
+        self, sub: str, topic: str, max_num: int,
+        aws_profile_name: str=None,
+        gcp_credential_path: str=None,
+        gcp_project: str=None
+    ):
         self.publisher = Publisher(
+            aws_profile_name=aws_profile_name,
             gcp_credential_path=gcp_credential_path,
             gcp_project=gcp_project
         )
         self.subscriber = Subscriber(
+            aws_profile_name=aws_profile_name,
             gcp_credential_path=gcp_credential_path,
             gcp_project=gcp_project
         )
@@ -22,7 +29,11 @@ class Forwarder:
             max_num=self.max_num,
             ack=ack
         )
+
         responses = []
+        if not messages:
+            return responses
+
         for message in messages:
             response = self.publisher.push(
                 topic_list=[self.topic],

@@ -7,13 +7,9 @@ from queuing_hub.conn.gcp import GcpSub
 
 class Subscriber:
 
-    def __init__(self, gcp_credential_path=None, gcp_project=None):
-        self._aws_sub = AwsSub()
-
-        if gcp_project:
-            self._gcp_sub = GcpSub(credential_path=gcp_credential_path)
-        else:
-            self._gcp_sub = GcpSub(credential_path=gcp_credential_path, project=gcp_project)
+    def __init__(self, aws_profile_name=None, gcp_credential_path=None, gcp_project=None):
+        self._aws_sub = AwsSub(profile_name=aws_profile_name)
+        self._gcp_sub = GcpSub(credential_path=gcp_credential_path, project=gcp_project)
 
         self.__connectors: list(BaseSub) = [self._aws_sub, self._gcp_sub]
         self._sub_list = []
@@ -39,7 +35,7 @@ class Subscriber:
 
     def purge(self, sub_list: list) -> None:
         for sub in sub_list:
-            connector = self.__get_connector(sub)
+            connector = self._get_connector(sub)
             connector.purge(sub)
 
     def pull(self, sub_list: list, max_num: int, ack: bool=True) -> list:
@@ -47,7 +43,7 @@ class Subscriber:
         connector: BaseSub
 
         for sub in sub_list:
-            connector = self.__get_connector(sub)
+            connector = self._get_connector(sub)
             response = connector.pull(sub=sub, max_num=max_num, ack=ack)
             if response != {}:
                 break
@@ -57,7 +53,7 @@ class Subscriber:
     def pull_nack(self, sub_list: list, max_num: int) -> list:
         return self.pull(sub_list=sub_list, max_num=max_num, ack=False)
 
-    def __get_connector(self, sub_path: str) -> BaseSub:
+    def _get_connector(self, sub_path: str) -> BaseSub:
         if re.search(
             r'https://.+-.+-.+\.queue\.amazonaws\.com/[0-9]+/.+',
             sub_path

@@ -12,7 +12,7 @@ PROJECT = os.environ['GCP_PROJECT']
 
 class GcpPub(BasePub):
 
-    def __init__(self, credential_path=None, project=PROJECT):
+    def __init__(self, credential_path=None, project=None):
         super().__init__()
 
         if credential_path:
@@ -23,8 +23,12 @@ class GcpPub(BasePub):
         self._publisher = pubsub_v1.PublisherClient(credentials=credentials)
         self._pub_client = pubsub_v1.publisher.client.publisher_client.PublisherClient()
 
+        if project:
+            self._project = project
+        else:
+            self._project = PROJECT
+
         # topics
-        self._project = project
         project_path = self._pub_client.common_project_path(self._project)
         self._topic_list = [queue.name for queue in self._pub_client.list_topics(project=project_path)]
 
@@ -46,7 +50,7 @@ class GcpSub(BaseSub):
     TIMEOUT = 5.0
     METRIC_TYPE = 'pubsub.googleapis.com/subscription/num_undelivered_messages'
 
-    def __init__(self, credential_path=None, project=PROJECT):
+    def __init__(self, credential_path=None, project=None):
         super().__init__()
 
         if credential_path:
@@ -55,10 +59,14 @@ class GcpSub(BaseSub):
             credentials = None
 
         self._client_async = pubsub_v1.SubscriberClient(credentials=credentials)
-        self._client_sync = pubsub_v1.subscriber.client.subscriber_client.SubscriberClient()
+        self._client_sync = pubsub_v1.subscriber.client.subscriber_client.SubscriberClient(credentials=credentials)
+
+        if project:
+            self._project = project
+        else:
+            self._project = PROJECT
 
         # subscriptions
-        self._project = project
         project_path = self._client_sync.common_project_path(self._project)
         self._sub_list = [queue.name for queue in self._client_sync.list_subscriptions(project=project_path)]
 

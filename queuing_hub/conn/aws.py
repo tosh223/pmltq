@@ -4,19 +4,16 @@ from queuing_hub.conn.base import BasePub, BaseSub
 
 class AwsBase():
 
-    def __init__(self, client=None, profile=None):
-        if client:
-            self._client = client
-        else:
-            session = boto3.Session(profile_name=profile)
-            self._client = session.client('sqs')
+    def __init__(self, profile_name=None):
+        session = boto3.Session(profile_name=profile_name)
+        self._client = session.client('sqs')
         self._queue_list = self._client.list_queues()['QueueUrls']
 
 
 class AwsPub(AwsBase, BasePub):
 
-    def __init__(self, client=None, profile=None):
-        AwsBase.__init__(self, client=client, profile=profile)
+    def __init__(self, profile_name=None):
+        AwsBase.__init__(self, profile_name=profile_name)
         BasePub.__init__(self)
 
     @property
@@ -43,8 +40,8 @@ class AwsSub(AwsBase, BaseSub):
         # 'VisibilityTimeout'
     ]
 
-    def __init__(self, client=None):
-        AwsBase.__init__(self, client=client)
+    def __init__(self, profile_name=None):
+        AwsBase.__init__(self, profile_name=profile_name)
         BaseSub.__init__(self)
 
     @property
@@ -73,10 +70,12 @@ class AwsSub(AwsBase, BaseSub):
             MaxNumberOfMessages=max_num
         )
         
-        if ack:
-            self._ack(sub, response['Messages'])
+        messages = response.get('Messages')
 
-        return response['Messages']
+        if ack and messages:
+            self._ack(sub, messages)
+
+        return messages
 
     def _ack(self, sub: str, messages: list) -> None:
         receipt_handle_list = [message['ReceiptHandle'] for message in messages]

@@ -6,13 +6,9 @@ from queuing_hub.conn.gcp import GcpPub
 
 class Publisher:
 
-    def __init__(self, gcp_credential_path=None, gcp_project=None):
-        self._aws_pub = AwsPub()
-
-        if gcp_project:
-            self._gcp_pub = GcpPub(credential_path=gcp_credential_path)
-        else:
-            self._gcp_pub = GcpPub(credential_path=gcp_credential_path, project=gcp_project)
+    def __init__(self, aws_profile_name=None, gcp_credential_path=None, gcp_project=None):
+        self._aws_pub = AwsPub(profile_name=aws_profile_name)
+        self._gcp_pub = GcpPub(credential_path=gcp_credential_path, project=gcp_project)
 
         self.__connectors: list(BasePub) = [self._aws_pub, self._gcp_pub]
         self._topic_list = []
