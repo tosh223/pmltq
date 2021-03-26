@@ -4,6 +4,7 @@ from concurrent.futures import TimeoutError
 
 from google.cloud import pubsub_v1
 from google.cloud.monitoring_v3 import query, MetricServiceClient
+from google.oauth2.service_account import Credentials
 
 from queuing_hub.conn.base import BasePub, BaseSub
 
@@ -11,13 +12,20 @@ PROJECT = os.environ['GCP_PROJECT']
 
 class GcpPub(BasePub):
 
-    def __init__(self):
+    def __init__(self, credential_path=None, project=PROJECT):
         super().__init__()
-        self._publisher = pubsub_v1.PublisherClient()
+
+        if credential_path:
+            credentials = Credentials.from_service_account_file(filename=credential_path)
+        else:
+            credentials = None
+
+        self._publisher = pubsub_v1.PublisherClient(credentials=credentials)
         self._pub_client = pubsub_v1.publisher.client.publisher_client.PublisherClient()
 
         # topics
-        project_path = self._pub_client.common_project_path(PROJECT)
+        self._project = project
+        project_path = self._pub_client.common_project_path(self._project)
         self._topic_list = [queue.name for queue in self._pub_client.list_topics(project=project_path)]
 
     @property
@@ -38,13 +46,20 @@ class GcpSub(BaseSub):
     TIMEOUT = 5.0
     METRIC_TYPE = 'pubsub.googleapis.com/subscription/num_undelivered_messages'
 
-    def __init__(self):
+    def __init__(self, credential_path=None, project=PROJECT):
         super().__init__()
-        self._client_async = pubsub_v1.SubscriberClient()
+
+        if credential_path:
+            credentials = Credentials.from_service_account_file(filename=credential_path)
+        else:
+            credentials = None
+
+        self._client_async = pubsub_v1.SubscriberClient(credentials=credentials)
         self._client_sync = pubsub_v1.subscriber.client.subscriber_client.SubscriberClient()
 
         # subscriptions
-        project_path = self._client_sync.common_project_path(PROJECT)
+        self._project = project
+        project_path = self._client_sync.common_project_path(self._project)
         self._sub_list = [queue.name for queue in self._client_sync.list_subscriptions(project=project_path)]
 
     def __del__(self):
@@ -61,7 +76,7 @@ class GcpSub(BaseSub):
 
         query_results = query.Query(
             client=MetricServiceClient(),
-            project=PROJECT,
+            project=self._project,
             metric_type=self.METRIC_TYPE,
             end_time=datetime.now(),
             minutes=2   # if set 1 minute, we get nothing while creating the latest metrics.
@@ -124,7 +139,7 @@ class GcpSub(BaseSub):
     def __read_metric(self, query: query.Query) -> dict:
         for content in query:
             sub_id = content.resource.labels['subscription_id']
-            sub = self._client_sync.subscription_path(PROJECT, sub_id)
+            sub = self._client_sync.subscription_path(self._project, sub_id)
             yield {
                 'subscription': sub,
                 'value': content.points[0].value.int64_value

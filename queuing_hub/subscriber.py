@@ -7,8 +7,15 @@ from queuing_hub.conn.gcp import GcpSub
 
 class Subscriber:
 
-    def __init__(self):
-        self.__connectors: list(BaseSub) = [AwsSub(), GcpSub()]
+    def __init__(self, gcp_credential_path=None, gcp_project=None):
+        self._aws_sub = AwsSub()
+
+        if gcp_project:
+            self._gcp_sub = GcpSub(credential_path=gcp_credential_path)
+        else:
+            self._gcp_sub = GcpSub(credential_path=gcp_credential_path, project=gcp_project)
+
+        self.__connectors: list(BaseSub) = [self._aws_sub, self._gcp_sub]
         self._sub_list = []
         for connector in self.__connectors:
             self._sub_list.extend(connector.sub_list)
@@ -50,18 +57,17 @@ class Subscriber:
     def pull_nack(self, sub_list: list, max_num: int) -> list:
         return self.pull(sub_list=sub_list, max_num=max_num, ack=False)
 
-    @staticmethod
-    def __get_connector(sub_path: str) -> BaseSub:
+    def __get_connector(self, sub_path: str) -> BaseSub:
         if re.search(
             r'https://.+-.+-.+\.queue\.amazonaws\.com/[0-9]+/.+',
             sub_path
         ):
-            connector = AwsSub()
+            connector = self._aws_sub
         elif re.search(
             r'projects/[a-z0-9-]+/subscriptions/.+',
             sub_path
         ):
-            connector = GcpSub()
+            connector = self._gcp_sub
         else:
             raise ValueError(f'Invalid subscription: {sub_path}')
         

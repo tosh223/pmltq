@@ -4,19 +4,19 @@ from queuing_hub.conn.base import BasePub, BaseSub
 
 class AwsBase():
 
-    def __init__(self, client=None):
+    def __init__(self, client=None, profile=None):
         if client:
             self._client = client
         else:
-            session = boto3.Session()
+            session = boto3.Session(profile_name=profile)
             self._client = session.client('sqs')
         self._queue_list = self._client.list_queues()['QueueUrls']
 
 
 class AwsPub(AwsBase, BasePub):
 
-    def __init__(self, client=None):
-        AwsBase.__init__(self, client=client)
+    def __init__(self, client=None, profile=None):
+        AwsBase.__init__(self, client=client, profile=profile)
         BasePub.__init__(self)
 
     @property
