@@ -21,7 +21,7 @@ class GcpPub(BasePub):
             credentials = None
 
         self._publisher = pubsub_v1.PublisherClient(credentials=credentials)
-        self._pub_client = pubsub_v1.publisher.client.publisher_client.PublisherClient()
+        self._pub_client = pubsub_v1.publisher.client.publisher_client.PublisherClient(credentials=credentials)
 
         if project:
             self._project = project
