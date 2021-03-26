@@ -26,7 +26,7 @@ class Publisher:
         return response
 
     @staticmethod
-    def __get_connector(topic: str) -> BasePub:
+    def _get_connector(topic: str) -> BasePub:
         if re.search(
             r'https://.+-.+-.+\.queue\.amazonaws\.com/[0-9]+/.+',
             topic

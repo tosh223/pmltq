@@ -11,6 +11,7 @@ google-cloud-pubsub = "^2.4.0"
 google-cloud-monitoring = "^2.0.1"
 boto3 = "^1.17.18"
 line-profiler = "^3.1.0"
+pytest = "^6.2.2"
 
 [tool.poetry.dev-dependencies]
 
