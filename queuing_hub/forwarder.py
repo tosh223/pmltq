@@ -1,13 +1,14 @@
 from queuing_hub.publisher import Publisher
 from queuing_hub.subscriber import Subscriber
 
+
 class Forwarder:
 
     def __init__(
-        self, sub: str, topic: str, max_num: int,
-        aws_profile_name: str=None,
-        gcp_credential_path: str=None,
-        gcp_project: str=None
+        self, sub: str, topic: str, max_num: int = 1,
+        aws_profile_name=None,
+        gcp_credential_path=None,
+        gcp_project=None
     ):
         self.publisher = Publisher(
             aws_profile_name=aws_profile_name,
@@ -23,7 +24,7 @@ class Forwarder:
         self.sub = sub
         self.max_num = max_num
 
-    def transport(self, ack: bool=True) -> list:
+    def transport(self, ack: bool = True) -> list:
         messages = self.subscriber.pull(
             sub_list=[self.sub],
             max_num=self.max_num,

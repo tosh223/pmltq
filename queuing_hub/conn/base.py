@@ -10,7 +10,7 @@ class BaseSub():
     def __init__(self):
         pass
 
-    def qsize(self, sub_list: list=None) -> dict:
+    def qsize(self, sub_list: list = None) -> dict:
         pass
 
     def is_empty(self, sub: str) -> bool:
@@ -19,7 +19,7 @@ class BaseSub():
     def purge(self, sub: str) -> None:
         pass
 
-    def pull(self, sub: str, max_num: int=1, ack: bool=False) -> list:
+    def pull(self, sub: str, max_num: int = 1, ack: bool = False) -> list:
         pass
 
     def _ack(self, sub: str, messages: list) -> None:

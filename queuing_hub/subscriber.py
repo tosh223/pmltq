@@ -5,11 +5,20 @@ from queuing_hub.conn.base import BaseSub
 from queuing_hub.conn.aws import AwsSub
 from queuing_hub.conn.gcp import GcpSub
 
+
 class Subscriber:
 
-    def __init__(self, aws_profile_name=None, gcp_credential_path=None, gcp_project=None):
+    def __init__(
+        self,
+        aws_profile_name=None,
+        gcp_credential_path=None,
+        gcp_project=None
+    ):
         self._aws_sub = AwsSub(profile_name=aws_profile_name)
-        self._gcp_sub = GcpSub(credential_path=gcp_credential_path, project=gcp_project)
+        self._gcp_sub = GcpSub(
+            credential_path=gcp_credential_path,
+            project=gcp_project
+        )
 
         self.__connectors: list(BaseSub) = [self._aws_sub, self._gcp_sub]
         self._sub_list = []
@@ -38,7 +47,12 @@ class Subscriber:
             connector = self._get_connector(sub)
             connector.purge(sub)
 
-    def pull(self, sub_list: list, max_num: int, ack: bool=True) -> list:
+    def pull(
+        self,
+        sub_list: list,
+        max_num: int,
+        ack: bool = True
+    ) -> list:
         response = {}
         connector: BaseSub
 
@@ -66,5 +80,5 @@ class Subscriber:
             connector = self._gcp_sub
         else:
             raise ValueError(f'Invalid subscription: {sub_path}')
-        
+
         return connector
