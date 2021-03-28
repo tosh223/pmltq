@@ -13,10 +13,10 @@ Multi-cloud Queuing Hub for Python
 
 ## Requirements
 
-python = "^3.8"
-google-cloud-pubsub = "^2.4.0"
-google-cloud-monitoring = "^2.0.1"
-boto3 = "^1.17.18"
+- python = "^3.8"
+- google-cloud-pubsub = "^2.4.0"
+- google-cloud-monitoring = "^2.0.1"
+- boto3 = "^1.17.18"
 
 ## Usage
 
