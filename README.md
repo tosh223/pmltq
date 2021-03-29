@@ -2,7 +2,7 @@
 
 Multi-cloud Queuing Hub for Python
 
-![aws-glue-crawlflow](https://github.com/tosh223/py-queuing-hub/blob/master/drawio/queuing_hub.svg)
+![queuing-hub](https://github.com/tosh223/py-queuing-hub/blob/master/drawio/queuing_hub.svg)
 
 ## Description
 
