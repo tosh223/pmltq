@@ -2,7 +2,7 @@
 
 Multi-cloud Queuing Hub for Python
 
-![queuing-hub2](https://github.com/tosh223/py-queuing-hub/blob/main/drawio/queuing_hub.svg)
+![queuing-hub](https://github.com/tosh223/py-queuing-hub/blob/main/drawio/queuing_hub.svg)
 
 ## Description
 
@@ -15,7 +15,7 @@ Multi-cloud Queuing Hub for Python
 
 ## Requirements
 
-- python = "^3.8"
+- python = "^3.6"
 - google-cloud-pubsub = "^2.4.0"
 - google-cloud-monitoring = "^2.0.1"
 - boto3 = "^1.17.18"
