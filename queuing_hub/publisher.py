@@ -28,13 +28,13 @@ class Publisher:
         return self._topic_list
 
     def push(self, topic_list: list, body: str) -> list:
-        response = []
+        message_ids = []
         connector: BasePub
 
         for topic in topic_list:
             connector = self._get_connector(topic)
-            response.append(connector.push(topic, body))
-        return response
+            message_ids.append(connector.push(topic, body))
+        return message_ids
 
     def _get_connector(self, topic: str) -> BasePub:
         if re.search(

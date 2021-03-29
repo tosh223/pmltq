@@ -44,4 +44,4 @@ class Forwarder:
         return responses
 
     def pass_through(self):
-        self.transport(ack=False)
+        return self.transport(ack=False)

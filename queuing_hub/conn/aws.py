@@ -26,7 +26,7 @@ class AwsPub(AwsBase, BasePub):
             QueueUrl=topic,
             MessageBody=body
         )
-        return response
+        return response['MessageId']
 
 
 class AwsSub(AwsBase, BaseSub):
@@ -76,7 +76,7 @@ class AwsSub(AwsBase, BaseSub):
         if ack and messages:
             self._ack(sub, messages)
 
-        return messages
+        return [message.get('Body') for message in messages]
 
     def _ack(self, sub: str, messages: list) -> None:
         receipt_handle_list = \

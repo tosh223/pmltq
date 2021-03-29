@@ -43,7 +43,8 @@ class GcpPub(BasePub):
 
     def push(self, topic: str, body: str) -> None:
         future = self._publisher.publish(topic, body.encode())
-        future.add_done_callback(self._callback)
+        # future.add_done_callback(self._callback)
+        return future.result()
 
     @staticmethod
     def _callback(future):

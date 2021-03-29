@@ -13,7 +13,7 @@ def main():
     print(sub.qsize())
     print(sub.pull(sub.sub_list, 1))
 
-    fwd = Forwarder(sub=sub.sub_list[0], topic=pub.topic_list[0], max_num=1)
+    fwd = Forwarder(sub=sub.sub_list[2], topic=pub.topic_list[0], max_num=1)
     print(fwd.pass_through())
     print(fwd.transport())
 

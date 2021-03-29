@@ -9,10 +9,8 @@ from queuing_hub.conn.gcp import GcpSub
 class Subscriber:
 
     def __init__(
-        self,
-        aws_profile_name=None,
-        gcp_credential_path=None,
-        gcp_project=None
+        self, aws_profile_name=None,
+        gcp_credential_path=None, gcp_project=None
     ):
         self._aws_sub = AwsSub(profile_name=aws_profile_name)
         self._gcp_sub = GcpSub(
@@ -47,19 +45,14 @@ class Subscriber:
             connector = self._get_connector(sub)
             connector.purge(sub)
 
-    def pull(
-        self,
-        sub_list: list,
-        max_num: int,
-        ack: bool = True
-    ) -> list:
-        response = {}
+    def pull(self, sub_list: list, max_num: int, ack: bool = True) -> list:
+        response = []
         connector: BaseSub
 
         for sub in sub_list:
             connector = self._get_connector(sub)
             response = connector.pull(sub=sub, max_num=max_num, ack=ack)
-            if response != {}:
+            if response != []:
                 break
 
         return response
