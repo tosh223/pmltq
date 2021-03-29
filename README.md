@@ -2,7 +2,7 @@
 
 Multi-cloud Queuing Hub for Python
 
-![queuing-hub](https://github.com/tosh223/py-queuing-hub/blob/master/drawio/queuing_hub.svg)
+![queuing-hub](https://github.com/tosh223/py-queuing-hub/blob/master/drawio/queuing_hub.svg)![queuing-hub2](https://github.com/tosh223/py-queuing-hub/blob/master/drawio/queuing_hub2.svg)
 
 ## Description
 
