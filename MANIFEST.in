@@ -1,7 +1,9 @@
-include *.lock
-include *.md
-include *.py
-recursive-include drawio *.drawio
-recursive-include drawio *.png
-recursive-include drawio *.svg
-recursive-include tests *.py
+include LICENSE
+exclude *.in
+exclude *.lock
+exclude *.py
+exclude README.md
+recursive-exclude drawio *.drawio
+recursive-exclude drawio *.png
+recursive-exclude drawio *.svg
+recursive-exclude tests *.py

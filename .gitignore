@@ -130,3 +130,5 @@ dmypy.json
 
 line_profiler.sh
 *.py.lprof
+
+setup.sh
