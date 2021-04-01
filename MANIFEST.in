@@ -1,0 +1,7 @@
+include *.lock
+include *.md
+include *.py
+recursive-include drawio *.drawio
+recursive-include drawio *.png
+recursive-include drawio *.svg
+recursive-include tests *.py
